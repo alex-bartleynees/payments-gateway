@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Host/Host.csproj" />
+  </Folder>
+  <Folder Name="/src/Payments/">
+    <Project Path="src/Payments.Api/Payments.Api.csproj" />
+    <Project Path="src/Payments.Application/Payments.Application.csproj" />
+    <Project Path="src/Payments.Domain/Payments.Domain.csproj" />
+    <Project Path="src/Payments.Infrastructure/Payments.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Common.IntegrationEvents/Common.IntegrationEvents.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Gateway.IntegrationTests/Gateway.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

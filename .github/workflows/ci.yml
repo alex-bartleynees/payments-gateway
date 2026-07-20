@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore integration tests
+        run: dotnet restore tests/Gateway.IntegrationTests/Gateway.IntegrationTests.csproj
+
+      # ubuntu-latest ships Docker, which Testcontainers uses to spin up Postgres/RabbitMQ.
+      - name: Run integration tests
+        run: >
+          dotnet test tests/Gateway.IntegrationTests/Gateway.IntegrationTests.csproj
+          --configuration Release
+          --no-restore
+          --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: "**/test-results.trx"
+          if-no-files-found: ignore

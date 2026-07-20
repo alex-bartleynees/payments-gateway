@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="SharedKernel.Messaging.Abstractions" Version="0.0.0-alpha.0.3" />
+  </ItemGroup>
+
+</Project>

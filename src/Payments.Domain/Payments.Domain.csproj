@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="SharedKernel.Abstractions" Version="0.0.0-alpha.0.3" />
+    <PackageReference Include="SharedKernel.Results" Version="0.0.0-alpha.0.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="SharedKernel.AspNetCore" Version="0.0.0-alpha.0.3" />
+    <PackageReference Include="SharedKernel.Abstractions" Version="0.0.0-alpha.0.3" />
+    <PackageReference Include="SharedKernel.Results" Version="0.0.0-alpha.0.3" />
+    <PackageReference Include="SharedKernel.EntityFrameworkCore" Version="0.0.0-alpha.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Payments.Infrastructure\Payments.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
+    <PackageReference Include="Mediator.Abstractions" Version="3.1.0-rc.1" />
+    <PackageReference Include="Mediator.SourceGenerator" Version="3.1.0-rc.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SharpGrip.FluentValidation.AutoValidation.Endpoints" Version="1.5.0" />
+    <PackageReference Include="SharpGrip.FluentValidation.AutoValidation.Shared" Version="1.5.0" />
+  </ItemGroup>
+
+</Project>

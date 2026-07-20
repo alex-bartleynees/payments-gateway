@@ -1,0 +1,152 @@
+replicaCount: 1
+
+namespace: "payments-gateway"
+
+image:
+  repository: creativefree/payments-gateway
+  pullPolicy: IfNotPresent
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# Resource limits and requests
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 45
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 20
+  periodSeconds: 5
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Configuration
+config:
+  aspNetCoreHttpPorts: "8080"
+  aspNetCoreUrls: "http://+:8080"
+  otlpEndpoint: "http://otel-collector.otel-system.svc.cluster.local:4317"
+
+# Database configuration (single Postgres database, migrate-on-boot)
+database:
+  secretName: "payments-gateway-db-secret"
+  connectionStringKey: "PAYMENTS_DB_CONNECTION_STRING"
+
+# Stripe configuration — single Stripe account, multi-product
+stripe:
+  publishableKey: ""
+  secretName: "payments-gateway-stripe-secret"
+  secretKeyKeyName: "STRIPE_SECRET_KEY"
+  webhookSecretKeyName: "STRIPE_WEBHOOK_SECRET"
+
+# Per-product billing config (bound from the `Products` section as productId -> config).
+# Add one block per product onboarded onto the gateway.
+products:
+  dopamineKick:
+    slug: "dopamine-kick"
+    priceId: ""
+    trialPeriodDays: 14
+    successUrl: ""
+    cancelUrl: ""
+    portalReturnUrl: ""
+
+# RabbitMQ configuration — publishes SubscriptionEntitlementChanged to the payments-direct exchange
+rabbitmq:
+  hostName: "definition.rabbitmq-system.svc.cluster.local"
+  port: 5672
+  virtualHost: "/dopamine-kick"
+  exchangeName: "payments-direct"
+  exchangeType: "direct"
+  secretName: "rabbitmq-secret"
+  usernameKey: "USERNAME"
+  passwordKey: "PASSWORD"
+
+# JWT configuration — shared Keycloak realm (same issuer as the DopamineKick monolith)
+jwt:
+  authority: "https://identity.alexbartleynees.com/realms/production"
+  audience: "account"
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: payments-gateway.alexbartleynees.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - secretName: payments-gateway-tls
+    #   hosts:
+    #     - payments-gateway.alexbartleynees.com
