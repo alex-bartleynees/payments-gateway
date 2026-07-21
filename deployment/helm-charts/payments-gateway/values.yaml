@@ -110,7 +110,7 @@ stripe:
 # Per-product billing config (bound from the `Products` section as productId -> config).
 # Add one block per product onboarded onto the gateway.
 products:
-  dopamineKick:
+  dopamine_kick:
     slug: "dopamine_kick"
     priceId: "price_1TvjaU2EuFsvJlV9qQH0LnRa"
     trialPeriodDays: 14
