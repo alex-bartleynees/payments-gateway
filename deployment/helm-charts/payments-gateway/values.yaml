@@ -102,7 +102,7 @@ database:
 
 # Stripe configuration — single Stripe account, multi-product
 stripe:
-  publishableKey: ""
+  publishableKey: "pk_live_51TujTS2EuFsvJlV9seaSLNUXae6b15QdSu8a6SVem9513Vf8FLZnGz7Y9xjSZz9eT9CGDkFAJ99okgvKftc4DYQH00waiLRIj1"
   secretName: "payments-gateway-stripe-secret"
   secretKeyKeyName: "STRIPE_SECRET_KEY"
   webhookSecretKeyName: "STRIPE_WEBHOOK_SECRET"
@@ -111,12 +111,12 @@ stripe:
 # Add one block per product onboarded onto the gateway.
 products:
   dopamineKick:
-    slug: "dopamine-kick"
-    priceId: ""
+    slug: "dopamine_kick"
+    priceId: "price_1TvjaU2EuFsvJlV9qQH0LnRa"
     trialPeriodDays: 14
-    successUrl: ""
-    cancelUrl: ""
-    portalReturnUrl: ""
+    successUrl: "https://app.dopamine-kick.com/success"
+    cancelUrl: "https://app.dopamine-kick.com/pricing"
+    portalReturnUrl: "https://app.dopamine-kick.com/account"
 
 # RabbitMQ configuration — publishes SubscriptionEntitlementChanged to the payments-direct exchange
 rabbitmq:
