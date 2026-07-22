@@ -16,6 +16,8 @@ public class ProductBillingConfig
 
     public string CancelUrl { get; set; } = string.Empty;
 
+    public bool AllowPromotionCodes { get; set; } = false;
+
     /// <summary>Where the Billing Portal returns the user after they finish managing their subscription.</summary>
     public string PortalReturnUrl { get; set; } = string.Empty;
 }
