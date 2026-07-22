@@ -57,6 +57,7 @@ public class StripePaymentGateway : IPaymentGateway
             ],
             SuccessUrl = product.SuccessUrl,
             CancelUrl = product.CancelUrl,
+            AllowPromotionCodes = product.AllowPromotionCodes,
             // Stamp the subscription so provider-side tooling (and any webhook that inspects metadata)
             // can attribute it to a product; routing in this service stays driven off the customer mapping.
             SubscriptionData = new Stripe.Checkout.SessionSubscriptionDataOptions
