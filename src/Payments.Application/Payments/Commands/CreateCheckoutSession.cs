@@ -29,8 +29,26 @@ public class CreateCheckoutSessionHandler(
             return Result<CheckoutSessionResponse>.Failure(customerResult.Error);
         }
 
-        var url = await paymentGateway.CreateCheckoutSessionUrlAsync(
-            request.ProductId, customerResult.ValueOrThrow, cancellationToken);
-        return Result<CheckoutSessionResponse>.Success(new CheckoutSessionResponse(url));
+        var customerReference = customerResult.ValueOrThrow;
+
+        try
+        {
+            var url = await paymentGateway.CreateCheckoutSessionUrlAsync(
+                request.ProductId, customerReference, cancellationToken);
+            return Result<CheckoutSessionResponse>.Success(new CheckoutSessionResponse(url));
+        }
+        catch (PaymentCustomerNotFoundException)
+        {
+            // Our mapping points at a customer the provider no longer has (e.g. deleted directly in
+            // the provider dashboard). Nothing depends on that customer id yet at this point in the
+            // flow, so it's safe to mint a replacement and repoint the mapping rather than fail the
+            // checkout outright.
+            customerReference = await customerService.RecreateCustomerAsync(
+                request.ProductId, request.UserId, request.Email, cancellationToken);
+
+            var url = await paymentGateway.CreateCheckoutSessionUrlAsync(
+                request.ProductId, customerReference, cancellationToken);
+            return Result<CheckoutSessionResponse>.Success(new CheckoutSessionResponse(url));
+        }
     }
 }

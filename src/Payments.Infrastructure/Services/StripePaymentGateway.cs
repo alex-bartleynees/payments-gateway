@@ -67,8 +67,15 @@ public class StripePaymentGateway : IPaymentGateway
             }
         };
 
-        var session = await new Stripe.Checkout.SessionService(_client).CreateAsync(options, cancellationToken: ct);
-        return session.Url;
+        try
+        {
+            var session = await new Stripe.Checkout.SessionService(_client).CreateAsync(options, cancellationToken: ct);
+            return session.Url;
+        }
+        catch (StripeException ex) when (IsMissingCustomer(ex))
+        {
+            throw new PaymentCustomerNotFoundException(customerReference);
+        }
     }
 
     public async Task<string> CreatePortalSessionUrlAsync(string productId, string customerReference, CancellationToken ct = default)
@@ -143,4 +150,7 @@ public class StripePaymentGateway : IPaymentGateway
 
     private static DateTimeOffset? ToUtc(DateTime? value) =>
         value is null ? null : new DateTimeOffset(DateTime.SpecifyKind(value.Value, DateTimeKind.Utc));
+
+    private static bool IsMissingCustomer(StripeException ex) =>
+        ex.StripeError?.Code == "resource_missing" && ex.StripeError.Param == "customer";
 }

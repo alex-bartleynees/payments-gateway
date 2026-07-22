@@ -11,6 +11,11 @@ public interface IPaymentsRepository
 
     Task AddMappingAsync(CustomerMapping mapping, CancellationToken ct = default);
 
+    /// <summary>Repoints an existing mapping at a new provider customer reference (e.g. after the
+    /// original was recreated because the provider no longer had it). No-ops if no mapping exists.</summary>
+    Task UpdateMappingCustomerReferenceAsync(
+        string productId, Guid userId, string customerReference, CancellationToken ct = default);
+
     /// <summary>Tracked read — callers mutate the returned entity and commit via the unit of work.</summary>
     Task<SubscriptionState?> GetSubscriptionStateAsync(string customerReference, CancellationToken ct = default);
 

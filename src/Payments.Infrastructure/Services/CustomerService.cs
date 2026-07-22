@@ -36,4 +36,15 @@ public class CustomerService(
 
         return Result<string>.Success(customerReference);
     }
+
+    public async Task<string> RecreateCustomerAsync(
+        string productId, Guid userId, string email, CancellationToken ct = default)
+    {
+        var customerReference = await paymentGateway.CreateCustomerAsync(productId, userId, email, ct);
+
+        await repository.UpdateMappingCustomerReferenceAsync(productId, userId, customerReference, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return customerReference;
+    }
 }

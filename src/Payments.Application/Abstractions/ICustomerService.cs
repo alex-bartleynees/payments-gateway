@@ -11,4 +11,9 @@ namespace Payments.Application.Abstractions;
 public interface ICustomerService
 {
     Task<Result<string>> EnsureCustomerAsync(string productId, Guid userId, string email, CancellationToken ct = default);
+
+    /// <summary>Creates a fresh provider customer and repoints the existing mapping at it. Used to
+    /// self-heal a mapping whose provider customer is gone (e.g. deleted directly in the provider
+    /// dashboard) — callers detect that case via <see cref="PaymentCustomerNotFoundException"/>.</summary>
+    Task<string> RecreateCustomerAsync(string productId, Guid userId, string email, CancellationToken ct = default);
 }

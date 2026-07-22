@@ -26,6 +26,18 @@ public class PaymentsRepository(PaymentsContext context) : IPaymentsRepository
         await context.CustomerMappings.AddAsync(mapping, ct);
     }
 
+    public async Task UpdateMappingCustomerReferenceAsync(
+        string productId, Guid userId, string customerReference, CancellationToken ct = default)
+    {
+        var mapping = await context.CustomerMappings
+            .FirstOrDefaultAsync(m => m.ProductId == productId && m.UserId == userId, ct);
+
+        if (mapping is not null)
+        {
+            mapping.CustomerReference = customerReference;
+        }
+    }
+
     public async Task<SubscriptionState?> GetSubscriptionStateAsync(string customerReference, CancellationToken ct = default)
     {
         return await context.SubscriptionStates
