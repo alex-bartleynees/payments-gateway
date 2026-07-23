@@ -5,7 +5,7 @@ namespace: "payments-gateway"
 image:
   repository: creativefree/payments-gateway
   pullPolicy: IfNotPresent
-  tag: 7294948
+  tag: "534f5f3"
 
 imagePullSecrets: []
 nameOverride: ""
