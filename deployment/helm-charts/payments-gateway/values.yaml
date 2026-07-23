@@ -117,6 +117,7 @@ products:
     successUrl: "https://app.dopamine-kick.com/success"
     cancelUrl: "https://app.dopamine-kick.com/pricing"
     portalReturnUrl: "https://app.dopamine-kick.com/account"
+    allowPromotionCodes: true
 
 # RabbitMQ configuration — publishes SubscriptionEntitlementChanged to the payments-direct exchange
 rabbitmq:

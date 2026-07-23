@@ -15,6 +15,7 @@ data:
   Products__{{ $product.slug }}__SuccessUrl: {{ $product.successUrl | quote }}
   Products__{{ $product.slug }}__CancelUrl: {{ $product.cancelUrl | quote }}
   Products__{{ $product.slug }}__PortalReturnUrl: {{ $product.portalReturnUrl | quote }}
+  Products__{{ $product.slug }}__AllowPromotionCodes: {{ $product.allowPromotionCodes | quote }}
   {{- end }}
   RabbitMQ__HostName: {{ .Values.rabbitmq.hostName | quote }}
   RabbitMQ__Port: {{ .Values.rabbitmq.port | quote }}
