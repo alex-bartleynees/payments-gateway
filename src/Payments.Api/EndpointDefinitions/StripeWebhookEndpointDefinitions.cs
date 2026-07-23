@@ -1,6 +1,7 @@
 using SharedKernel.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Payments.Application.Abstractions;
 using Payments.Application.Payments.Commands;
@@ -16,6 +17,7 @@ namespace Payments.Api.EndpointDefinitions;
 /// </summary>
 public class StripeWebhookEndpointDefinitions : IEndpointDefinition
 {
+    private const int MaxWebhookBodyBytes = 64 * 1024;
     // Every one of these just means "this customer's subscription may have changed — resync it".
     private static readonly HashSet<string> HandledEvents =
     [
@@ -43,6 +45,7 @@ public class StripeWebhookEndpointDefinitions : IEndpointDefinition
     {
         app.MapPost("api/billing/webhook", HandleWebhook)
             .AllowAnonymous()
+            .WithMetadata(new RequestSizeLimitAttribute(MaxWebhookBodyBytes))
             .WithName("StripeWebhook");
     }
 
@@ -52,6 +55,11 @@ public class StripeWebhookEndpointDefinitions : IEndpointDefinition
         Payments.Api.Mediator.Mediator mediator,
         ILogger<StripeWebhookEndpointDefinitions> logger)
     {
+        if (request.ContentLength > MaxWebhookBodyBytes)
+        {
+            return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
+        }
+
         using var reader = new StreamReader(request.Body);
         var json = await reader.ReadToEndAsync();
         var signature = request.Headers["Stripe-Signature"].ToString();
