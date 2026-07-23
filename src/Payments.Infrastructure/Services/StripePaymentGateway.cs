@@ -27,7 +27,12 @@ public class StripePaymentGateway : IPaymentGateway
         _client = new StripeClient(_options.SecretKey);
     }
 
-    public async Task<string> CreateCustomerAsync(string productId, Guid userId, string email, CancellationToken ct = default)
+    public async Task<string> CreateCustomerAsync(
+        string productId,
+        Guid userId,
+        string email,
+        string idempotencyKey,
+        CancellationToken ct = default)
     {
         var options = new CustomerCreateOptions
         {
@@ -39,7 +44,9 @@ public class StripePaymentGateway : IPaymentGateway
             }
         };
 
-        var customer = await new Stripe.CustomerService(_client).CreateAsync(options, cancellationToken: ct);
+        var requestOptions = new RequestOptions { IdempotencyKey = idempotencyKey };
+        var customer = await new Stripe.CustomerService(_client)
+            .CreateAsync(options, requestOptions, ct);
         return customer.Id;
     }
 

@@ -16,21 +16,15 @@ namespace Payments.Application.Payments.Commands;
 public record RecordWebhookEvent(string EventReference, string EventType, string CustomerReference) : IRequest<Result>;
 
 public class RecordWebhookEventHandler(
-    IPaymentsRepository repository,
-    IPaymentsUnitOfWork unitOfWork) : IRequestHandler<RecordWebhookEvent, Result>
+    IPaymentsRepository repository) : IRequestHandler<RecordWebhookEvent, Result>
 {
     public async ValueTask<Result> Handle(RecordWebhookEvent request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request);
 
-        if (await repository.InboxEventExistsAsync(request.EventReference, cancellationToken))
-        {
-            return Result.Success();
-        }
-
         var mapping = await repository.GetMappingByCustomerReferenceAsync(request.CustomerReference, cancellationToken);
 
-        await repository.AddInboxMessageAsync(
+        await repository.TryAddInboxMessageAsync(
             new InboxMessage
             {
                 Id = Guid.NewGuid(),
@@ -41,7 +35,8 @@ public class RecordWebhookEventHandler(
             },
             cancellationToken);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        // TryAddInboxMessageAsync executes an atomic INSERT ... ON CONFLICT DO NOTHING, so concurrent
+        // redeliveries are acknowledged without a check-then-insert race.
         return Result.Success();
     }
 }

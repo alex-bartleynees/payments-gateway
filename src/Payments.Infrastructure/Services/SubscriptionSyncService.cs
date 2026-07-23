@@ -11,6 +11,7 @@ namespace Payments.Infrastructure.Services;
 public class SubscriptionSyncService(
     IPaymentsRepository repository,
     IPaymentGateway paymentGateway,
+    IProductBillingRegistry products,
     IPaymentsUnitOfWork unitOfWork,
     ILogger<SubscriptionSyncService> logger) : ISubscriptionSyncService
 {
@@ -22,6 +23,23 @@ public class SubscriptionSyncService(
         var mapping = await repository.GetMappingByCustomerReferenceAsync(customerReference, ct);
 
         var snapshot = await paymentGateway.GetLatestSubscriptionAsync(customerReference, ct);
+
+        if (mapping is not null && snapshot is not null)
+        {
+            var expectedPrice = products.Get(mapping.ProductId).PriceId;
+            if (!string.Equals(snapshot.PriceId, expectedPrice, StringComparison.Ordinal))
+            {
+                logger.LogWarning(
+                    "Ignoring subscription {SubscriptionReference} for customer {CustomerReference}: " +
+                    "price {ActualPriceId} does not match product {ProductId} price {ExpectedPriceId}",
+                    snapshot.SubscriptionReference,
+                    customerReference,
+                    snapshot.PriceId,
+                    mapping.ProductId,
+                    expectedPrice);
+                snapshot = null;
+            }
+        }
 
         var state = await repository.GetSubscriptionStateAsync(customerReference, ct);
         if (state is null)

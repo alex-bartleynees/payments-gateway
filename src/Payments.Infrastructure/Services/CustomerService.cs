@@ -29,10 +29,26 @@ public class CustomerService(
             return Result<string>.Success(existing.CustomerReference);
         }
 
-        var customerReference = await paymentGateway.CreateCustomerAsync(productId, userId, email, ct);
+        // A stable provider idempotency key closes the race where two first requests both observe no
+        // mapping. Both calls resolve to the same provider customer, and the losing DB insert can then
+        // safely return the mapping written by the winner.
+        var idempotencyKey = $"customer-binding:{productId}:{userId:N}";
+        var customerReference = await paymentGateway.CreateCustomerAsync(
+            productId, userId, email, idempotencyKey, ct);
 
-        await repository.AddMappingAsync(new CustomerMapping(productId, userId, customerReference), ct);
-        await unitOfWork.SaveChangesAsync(ct);
+        var inserted = await repository.TryAddMappingAsync(
+            new CustomerMapping(productId, userId, customerReference), ct);
+
+        if (!inserted)
+        {
+            var winner = await repository.GetMappingByUserIdAsync(productId, userId, ct);
+            if (winner is not null)
+            {
+                return Result<string>.Success(winner.CustomerReference);
+            }
+
+            throw new InvalidOperationException("Customer mapping conflict was not followed by a readable mapping.");
+        }
 
         return Result<string>.Success(customerReference);
     }
@@ -40,7 +56,10 @@ public class CustomerService(
     public async Task<string> RecreateCustomerAsync(
         string productId, Guid userId, string email, CancellationToken ct = default)
     {
-        var customerReference = await paymentGateway.CreateCustomerAsync(productId, userId, email, ct);
+        // Re-creation intentionally gets a fresh key; reusing the initial key could replay the deleted
+        // customer's original Stripe response.
+        var customerReference = await paymentGateway.CreateCustomerAsync(
+            productId, userId, email, $"customer-replacement:{Guid.NewGuid():N}", ct);
 
         await repository.UpdateMappingCustomerReferenceAsync(productId, userId, customerReference, ct);
         await unitOfWork.SaveChangesAsync(ct);

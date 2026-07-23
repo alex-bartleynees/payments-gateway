@@ -9,7 +9,9 @@ public interface IPaymentsRepository
     /// <summary>Resolves the mapping (and thus its product + user) from the globally-unique customer reference.</summary>
     Task<CustomerMapping?> GetMappingByCustomerReferenceAsync(string customerReference, CancellationToken ct = default);
 
-    Task AddMappingAsync(CustomerMapping mapping, CancellationToken ct = default);
+    /// <summary>Atomically inserts a mapping, returning false when another request already inserted
+    /// the same product/user or customer reference.</summary>
+    Task<bool> TryAddMappingAsync(CustomerMapping mapping, CancellationToken ct = default);
 
     /// <summary>Repoints an existing mapping at a new provider customer reference (e.g. after the
     /// original was recreated because the provider no longer had it). No-ops if no mapping exists.</summary>
@@ -23,7 +25,9 @@ public interface IPaymentsRepository
 
     Task<bool> InboxEventExistsAsync(string eventReference, CancellationToken ct = default);
 
-    Task AddInboxMessageAsync(InboxMessage message, CancellationToken ct = default);
+    /// <summary>Atomically records a webhook event. Returns false for a redelivery of an existing
+    /// event reference.</summary>
+    Task<bool> TryAddInboxMessageAsync(InboxMessage message, CancellationToken ct = default);
 
     /// <summary>Enqueues a transactional-outbox row; committed atomically with the state overwrite.</summary>
     Task AddOutboxMessageAsync(OutboxMessage message, CancellationToken ct = default);

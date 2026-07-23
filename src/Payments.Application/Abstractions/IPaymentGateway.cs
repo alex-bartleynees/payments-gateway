@@ -14,7 +14,12 @@ public interface IPaymentGateway
 {
     /// <summary>Creates a provider customer for the user and returns its opaque reference. Stamps the
     /// customer with <c>productId</c> + <c>userId</c> metadata for provider-side diagnostics.</summary>
-    Task<string> CreateCustomerAsync(string productId, Guid userId, string email, CancellationToken ct = default);
+    Task<string> CreateCustomerAsync(
+        string productId,
+        Guid userId,
+        string email,
+        string idempotencyKey,
+        CancellationToken ct = default);
 
     Task<string> CreateCheckoutSessionUrlAsync(string productId, string customerReference, CancellationToken ct = default);
 

@@ -116,4 +116,16 @@ public class BillingEndpointsTests(ApiTestFixture fixture)
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task Webhook_rejects_an_oversized_body()
+    {
+        var client = fixture.Factory.CreateClient();
+        var content = new StringContent(new string('x', 65 * 1024));
+        content.Headers.Add("Stripe-Signature", "t=1,v1=not_a_valid_signature");
+
+        var response = await client.PostAsync("/api/billing/webhook", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.RequestEntityTooLarge);
+    }
 }

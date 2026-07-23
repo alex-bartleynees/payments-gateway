@@ -21,9 +21,19 @@ public class PaymentsRepository(PaymentsContext context) : IPaymentsRepository
             .FirstOrDefaultAsync(m => m.CustomerReference == customerReference, ct);
     }
 
-    public async Task AddMappingAsync(CustomerMapping mapping, CancellationToken ct = default)
+    public async Task<bool> TryAddMappingAsync(CustomerMapping mapping, CancellationToken ct = default)
     {
-        await context.CustomerMappings.AddAsync(mapping, ct);
+        var now = DateTimeOffset.UtcNow;
+        var rows = await context.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+             INSERT INTO "CustomerMappings"
+                 ("ProductId", "UserId", "CustomerReference", "CreatedAt", "UpdatedAt")
+             VALUES
+                 ({mapping.ProductId}, {mapping.UserId}, {mapping.CustomerReference}, {now}, {now})
+             ON CONFLICT DO NOTHING
+             """, ct);
+
+        return rows == 1;
     }
 
     public async Task UpdateMappingCustomerReferenceAsync(
@@ -56,9 +66,21 @@ public class PaymentsRepository(PaymentsContext context) : IPaymentsRepository
             .AnyAsync(m => m.EventReference == eventReference, ct);
     }
 
-    public async Task AddInboxMessageAsync(InboxMessage message, CancellationToken ct = default)
+    public async Task<bool> TryAddInboxMessageAsync(InboxMessage message, CancellationToken ct = default)
     {
-        await context.InboxMessages.AddAsync(message, ct);
+        var now = DateTimeOffset.UtcNow;
+        var rows = await context.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+             INSERT INTO "InboxMessages"
+                 ("Id", "ProductId", "EventReference", "EventType", "CustomerReference",
+                  "Processed", "ProcessedAt", "Attempts", "LastError", "CreatedAt", "UpdatedAt")
+             VALUES
+                 ({message.Id}, {message.ProductId}, {message.EventReference}, {message.EventType},
+                  {message.CustomerReference}, false, NULL, 0, NULL, {now}, {now})
+             ON CONFLICT ("EventReference") DO NOTHING
+             """, ct);
+
+        return rows == 1;
     }
 
     public async Task AddOutboxMessageAsync(OutboxMessage message, CancellationToken ct = default)
