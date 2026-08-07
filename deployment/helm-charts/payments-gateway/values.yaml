@@ -118,6 +118,16 @@ products:
     cancelUrl: "https://app.dopamine-kick.com/pricing"
     portalReturnUrl: "https://app.dopamine-kick.com/account"
     allowPromotionCodes: true
+  # Coffee Journal ("Bloom"). Underscore slug — must match the productId segment
+  # the coffee-journal BFF injects (values-coffee-journal.yaml billing-route).
+  coffee_journal:
+    slug: "coffee_journal"
+    priceId: "price_1U1wwJ2EuFsvJlV9f4cq2UPX" # Stripe Price ID for the Bloom Sync subscription
+    trialPeriodDays: 14
+    successUrl: "https://app.coffeesjournal.com/success"
+    cancelUrl: "https://app.coffeesjournal.com/pricing"
+    portalReturnUrl: "https://app.coffeesjournal.com/pricing"
+    allowPromotionCodes: true
 
 # RabbitMQ configuration — publishes SubscriptionEntitlementChanged to the payments-direct exchange
 rabbitmq:
